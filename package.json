@@ -2,7 +2,7 @@
   "name": "ying",
   "description": "",
   "version": "0.1.0",
-  "main": "build/index.js",
+  "main": "build/electron/index.js",
   "scripts": {
     "prestart": "cross-env NODE_ENV=development node scripts/preBuild.js",
     "start": "cross-env NODE_ENV=development npm-run-all -p -r build:frontend:dev start:electron",
@@ -11,9 +11,9 @@
     "postbuild": "cross-env NODE_ENV=production node scripts/postBuild.js",
     "build:frontend:dev": "cross-env NODE_ENV=development rollup -c -w",
     "build:frontend:prod": "cross-env NODE_ENV=production rollup -c",
-    "build:electron:dev": "tsc --p ./tsconfig.electron.json",
-    "build:electron:dev:watch": "tsc -w --p ./tsconfig.electron.json",
-    "build:electron:prod": "cross-env NODE_ENV=production tsc --p ./tsconfig.electron.prod.json",
+    "build:electron:dev": "tsc --p ./tsconfig.electron.json && npm run copy-assets",
+    "build:electron:dev:watch": "tsc -w --p ./tsconfig.electron.json && npm run copy-assets",
+    "build:electron:prod": "cross-env NODE_ENV=production tsc --p ./tsconfig.electron.prod.json && npm run copy-assets",
     "validate:svelte": "svelte-check",
     "start:electron:run": "electron .",
     "start:electron:nodemon": "nodemon",
@@ -31,9 +31,12 @@
     "lint:svelte": "eslint -c eslint.svelte.json --ext .js,.ts src/frontend",
     "lint": "npm-run-all -s lint:electron lint:svelte",
     "prepublishOnly": "npm-run-all -s test lint",
-    "preversion": "npm-run-all -s lint format"
+    "preversion": "npm-run-all -s lint format",
+    "copy-assets": "copyfiles -u 2 src/assets/* build/assets",
+    "build-database": "node scripts/dictionary.js"
   },
   "dependencies": {
+    "better-sqlite3": "^7.5.1",
     "electron-log": "^4.3.5",
     "electron-store": "^8.0.0",
     "electron-updater": "^4.3.9"
@@ -49,6 +52,7 @@
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
     "clean-css": "^5.1.2",
+    "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
     "electron": "^16.0.6",
     "electron-builder": "^22.11.7",
@@ -106,7 +110,7 @@
       "package.json"
     ],
     "extraResources": [
-      "assets/**"
+      "src/assets/*"
     ],
     "publish": [
       {

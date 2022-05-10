@@ -4,12 +4,13 @@ import {
   Notification,
   // nativeImage
 } from "electron";
-import { join } from "path";
+import path, { join } from "path";
 import { parse } from "url";
 import { autoUpdater } from "electron-updater";
 
 import logger from "./utils/logger";
 import settings from "./utils/settings";
+import { loadDictionary, loadPredictionHandlers } from './prediction';
 
 const isProd = process.env.NODE_ENV === "production" || app.isPackaged;
 
@@ -23,19 +24,22 @@ let notification: Notification | null;
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 680,
+    width: 1400,
+    height: 800,
     webPreferences: {
       devTools: isProd ? false : true,
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     },
   });
+
+  mainWindow.setMenu(null);
 
   const url =
     // process.env.NODE_ENV === "production"
     isProd
       ? // in production, use the statically build version of our application
-        `file://${join(__dirname, "public", "index.html")}`
+        `file://${join(__dirname, "..", "public", "index.html")}`
       : // in dev, target the host and port of the local rollup web server
         "http://localhost:5000";
 
@@ -43,6 +47,9 @@ const createWindow = () => {
     logger.error(JSON.stringify(err));
     app.quit();
   });
+
+  loadDictionary();
+  loadPredictionHandlers();
 
   if (!isProd) mainWindow.webContents.openDevTools();
 

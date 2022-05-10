@@ -1,30 +1,35 @@
 <style>
-  main {
-    text-align: center;
+  .container {
     padding: 1em;
-    max-width: 240px;
+    max-width: 600px;
     margin: 0 auto;
   }
 
+  .heading {
+    text-align: center;
+    margin: 50px 0;
+  }
+
   h1 {
-    color: #ff3e00;
+    color: #609b58;
     text-transform: uppercase;
     font-size: 4em;
     font-weight: 100;
+    margin-bottom: 0;
   }
 
-  @media (min-width: 640px) {
-    main {
-      max-width: none;
-    }
-  }
 </style>
 
 <script lang="ts">
-  export let name: string;
+  import PredictiveInput from './components/PredictiveInput.svelte';
 </script>
 
 <main>
-  <h1>Hello {name}!</h1>
-  <p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+  <div class="container">
+    <div class="heading">
+      <h1>ying</h1>
+      <small>A Chinese note taking and study tool.</small>
+    </div>
+    <PredictiveInput/>
+  </div>
 </main>
