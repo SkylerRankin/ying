@@ -36,6 +36,7 @@
     "build-database": "node scripts/dictionary.js"
   },
   "dependencies": {
+    "@types/better-sqlite3": "^7.5.0",
     "better-sqlite3": "^7.5.1",
     "electron-log": "^4.3.5",
     "electron-store": "^8.0.0",

@@ -11,6 +11,7 @@ import { autoUpdater } from "electron-updater";
 import logger from "./utils/logger";
 import settings from "./utils/settings";
 import { loadDictionary, loadPredictionHandlers } from './prediction';
+import { loadStorageHandlers } from "./notesStorage";
 
 const isProd = process.env.NODE_ENV === "production" || app.isPackaged;
 
@@ -50,6 +51,7 @@ const createWindow = () => {
 
   loadDictionary();
   loadPredictionHandlers();
+  loadStorageHandlers();
 
   if (!isProd) mainWindow.webContents.openDevTools();
 
