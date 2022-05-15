@@ -16,6 +16,7 @@
   }
 
   .leftColumn {
+    flex: none;
     width: 200px;
     height: 100%;
   }
@@ -35,8 +36,10 @@
 
 <script lang="ts">
   import MenuTab from "./components/MenuTab.svelte";
-  import { fade } from "svelte/transition";
-  let currentTab: string = "Notes";
+  import { blur } from "svelte/transition";
+  import NotesPage from "./pages/NotesPage.svelte";
+  import WordInputPage from "./pages/WordInputPage.svelte";
+  let currentTab: string = "WordInput";
 </script>
 
 <main>
@@ -51,13 +54,17 @@
     </div>
     <div class="rightColumn">
       {#if currentTab === "Notes"}
-        <div transition:fade={{duration: 300}}>
-          <div>Notes</div>
+        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>
+          <NotesPage/>
         </div>
       {:else if currentTab === "Test"}
-        <div transition:fade={{duration: 300}}>test</div>
+        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>test</div>
       {:else if currentTab === "Statistics"}
-        <div transition:fade={{duration: 300}}>stats</div>
+        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>stats</div>
+      {:else if currentTab === "WordInput"}
+        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>
+          <WordInputPage/>
+        </div>
       {/if}
     </div>
   </div>
