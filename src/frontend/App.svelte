@@ -12,7 +12,8 @@
     font-size: 4em;
     font-weight: 100;
     margin: 0;
-    text-align: center;
+    margin-left: 50px;
+    text-align: left;
   }
 
   .leftColumn {
@@ -36,36 +37,37 @@
 
 <script lang="ts">
   import MenuTab from "./components/MenuTab.svelte";
-  import { blur } from "svelte/transition";
+  import { slide } from "svelte/transition";
+  import { sineInOut } from "svelte/easing";
   import NotesPage from "./pages/NotesPage.svelte";
   import WordInputPage from "./pages/WordInputPage.svelte";
-  let currentTab: string = "WordInput";
+  let currentTab: string = "Add";
+
+  const tabs = [
+      { name: "Notes", component: NotesPage },
+      { name: "Add", component: WordInputPage },
+      { name: "Test", component: NotesPage },
+      { name: "Statistics", component: NotesPage }
+  ];
+
 </script>
 
 <main>
+  <h1>Ying</h1>
   <div class="container">
     <div class="leftColumn">
-      <h1>ying</h1>
-      <small>A Chinese note taking and study tool.</small>
-      <hr/>
-      <MenuTab bind:currentTab text="Notes"/>
-      <MenuTab bind:currentTab text="Test"/>
-      <MenuTab bind:currentTab text="Statistics"/>
+      {#each tabs as tab}
+        <MenuTab bind:currentTab text={tab.name}/>
+      {/each}
     </div>
     <div class="rightColumn">
-      {#if currentTab === "Notes"}
-        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>
-          <NotesPage/>
-        </div>
-      {:else if currentTab === "Test"}
-        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>test</div>
-      {:else if currentTab === "Statistics"}
-        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>stats</div>
-      {:else if currentTab === "WordInput"}
-        <div in:blur={{duration: 300, delay: 300}} out:blur={{duration: 300}}>
-          <WordInputPage/>
-        </div>
-      {/if}
+      {#each tabs as tab}
+        {#if currentTab === tab.name}
+          <div in:slide={{duration: 300, delay: 350, easing: sineInOut}} out:slide={{duration: 300}}>
+            <svelte:component this={tab.component}/>
+          </div>
+        {/if}
+      {/each}
     </div>
   </div>
 </main>

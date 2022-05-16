@@ -34,7 +34,7 @@ const loadDatabase = () => {
     // Create empty notes table if one does not exist.
     const tables = database.prepare("SELECT * FROM sqlite_master WHERE type='table'").all();
     if (tables.filter(table => table.name === "notes").length === 0) {
-        database.prepare("CREATE TABLE notes(id INTEGER PRIMARY KEY,type,english,pinyin,pinyinSearchable,simplified,notes)").run();
+        database.prepare("CREATE TABLE notes(id INTEGER PRIMARY KEY,type,english,pinyin,pinyinSearchable,simplified,notes,timeCreated)").run();
         logger.info("Created empty notes table in database.");
     }
 }
@@ -51,19 +51,20 @@ const loadStorageHandlers = () => {
         const english = JSON.stringify(note.english);
         const pinyin = JSON.stringify(note.pinyin);
         const pinyinSearchable = pinyinArrayToSearchable(note);
-        database.prepare("INSERT INTO notes(type,english,pinyin,pinyinSearchable,simplified,notes) VALUES (?,?,?,?,?)")
-            .run([note.type.toString(), english, pinyin, pinyinSearchable, note.simplified, note.notes]);
+        database.prepare("INSERT INTO notes(type,english,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?)")
+            .run([note.type.toString(), english, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
     });
 
     // AddNewNotes
     ipcMain.handle(IPCHandlers.AddNewNotes, (_, notes: Note[]) => {
-        const statement = database.prepare("INSERT INTO notes(type,english,pinyin,pinyinSearchable,simplified,notes) VALUES (?,?,?,?,?)");
+        const statement = database.prepare("INSERT INTO notes(type,english,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?)");
         database.transaction(() => {
+            console.log(notes);
             notes.forEach(note => {
                 const english = JSON.stringify(note.english);
                 const pinyin = JSON.stringify(note.pinyin);
                 const pinyinSearchable = pinyinArrayToSearchable(note);
-                statement.run([note.type.toString(), english, pinyin, pinyinSearchable,, note.simplified, note.notes]);
+                statement.run([note.type.toString(), english, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
             });
         })();
     });

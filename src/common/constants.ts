@@ -18,12 +18,13 @@ export enum NoteType {
 }
 
 export type Note = {
-    id: number,
+    id?: number, // Optional since this only needs to be set at the database level, not before.
     type: NoteType,
     english: string,
     pinyin: string,
     simplified: string,
-    notes: string
+    notes: string,
+    timeCreated: number
 }
 
 export type Prediction = {
@@ -32,11 +33,11 @@ export type Prediction = {
 }
 
 export interface ElectronAPI {
-    addNewNote: (note: Note) => void,
-    addNewNotes: (notes: Note[]) => void,
-    deleteNote: (id: number) => void,
-    getAllNotes: () => Note[],
-    getNotesOfType: (type: NoteType) => Note[],
-    getSearchPredictions: (search: string) => Prediction[],
-    updateNote: (updatedNote: Note) => void
+    addNewNote: (note: Note) => Promise<void>,
+    addNewNotes: (notes: Note[]) => Promise<void>,
+    deleteNote: (id: number) => Promise<void>,
+    getAllNotes: () => Promise<Note[]>,
+    getNotesOfType: (type: NoteType) => Promise<Note[]>,
+    getSearchPredictions: (search: string) => Promise<Prediction[]>,
+    updateNote: (updatedNote: Note) => Promise<void>
 }
