@@ -1,4 +1,9 @@
 import { writable } from 'svelte/store';
-import type { Note } from '../common/constants';
+import type { Note, ElectronAPI } from '../common/constants';
+const electronAPI: ElectronAPI = (window as any).electronAPI;
 
 export const notesStore = writable([] as Note[]);
+(async () => {
+    const notes: Note[] = await electronAPI.getAllNotes();
+    notesStore.update((_) => notes);
+})();

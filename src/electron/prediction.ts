@@ -22,7 +22,7 @@ const loadDictionary = () => {
 }
 
 const loadPredictionHandlers = () => {
-    ipcMain.handle(IPCHandlers.GetSearchPredictions, (_, searchText) => {
+    ipcMain.handle(IPCHandlers.GetDictionarySearchPredictions, (_, searchText) => {
         const result = dictionaryDB.prepare("SELECT * FROM dictionary WHERE pinyinSearchable = ?").all([searchText]);
         return result;
     });

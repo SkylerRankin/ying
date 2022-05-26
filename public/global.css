@@ -1,69 +1,39 @@
+@font-face {
+	font-family: 'CourierPrime';
+	font-style: normal;
+	src: url('./fonts/CourierPrime/CourierPrime.ttf') format('truetype');
+}
+
+* {
+	font-family: CourierPrime;
+	--main-color-gray: #8a9199;
+	--main-color-red: #f51818;
+	--main-color-green: #86b300;
+	--main-color-yellow: #f2ae49;
+	--main-color-blue: #399ee6;
+	--main-color-purple: #a37acc;
+	--main-color-teal: #4cbf99;
+}
+
 html, body {
 	position: relative;
 	width: 100%;
 	height: 100%;
+	padding: 0;
+	margin: 0;
 	/* Disable text highlighting by default. */
 	user-select: none; /* supported by Chrome and Opera */
 	-webkit-user-select: none; /* Safari */
 	-khtml-user-select: none; /* Konqueror HTML */
 	-moz-user-select: none; /* Firefox */
 	-ms-user-select: none; /* Internet Explorer/Edge */
-}
-
-body {
-	color: #333;
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-}
-
-a {
-	color: rgb(0,100,200);
-	text-decoration: none;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-
-a:visited {
-	color: rgb(0,80,160);
-}
-
-label {
-	display: block;
-}
-
-input, button, select, textarea {
-	font-family: inherit;
-	font-size: inherit;
-	-webkit-padding: 0.4em 0;
-	padding: 0.4em;
-	margin: 0 0 0.5em 0;
-	box-sizing: border-box;
-	border: 1px solid #ccc;
-	border-radius: 2px;
-}
-
-input:disabled {
-	color: #ccc;
+	background-color: #fafafa;
 }
 
 button {
-	color: #333;
-	background-color: #f4f4f4;
-	outline: none;
+	border: none;
+	background: none;
+	cursor: pointer;
 }
 
-button:disabled {
-	color: #999;
-}
-
-button:not(:disabled):active {
-	background-color: #ddd;
-}
-
-button:focus {
-	border-color: #666;
-}
+button:hover { text-decoration: underline; }

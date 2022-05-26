@@ -2,7 +2,8 @@ import type { Database } from 'better-sqlite3';
 import * as BetterSqlite3 from 'better-sqlite3';
 const { join } = require("path");
 import { app, ipcMain } from 'electron';
-import { IPCHandlers, Note, NoteType } from '../common/constants';
+// import { writeFile } from 'fs/promises';
+import { IPCHandlers, Note, NoteSearchResults, NoteType } from '../common/constants';
 import logger from './utils/logger';
 const DatabaseConstructor = BetterSqlite3.default;
 
@@ -14,6 +15,7 @@ const DatabaseConstructor = BetterSqlite3.default;
  *   id: number
  *   type: number
  *   english: string, ex="[definition1, definition2]"
+ *   englishSearchable: string, ex="definition1 definition2"
  *   pinyin: string, ex="[hen3, hao3]"
  *   pinyinSearchable: string, ex="hen hao"
  *   simplified: string
@@ -23,18 +25,20 @@ const DatabaseConstructor = BetterSqlite3.default;
 
 let database: Database;
 const isProd = process.env.NODE_ENV === "production" || app.isPackaged;
+const notesDatabasePath: string = isProd ?
+    join(app.getAppPath(), "..", "src", "assets", "notes.db") :
+    // In dev mode, save the database in the source assets directory. This way
+    // it is persisted between runs of the application.
+    join(__dirname, "..", "..", "src", "assets", "notes.db");
 
 const loadDatabase = () => {
-    const dbPath = isProd ?
-        join(app.getAppPath(), "..", "src", "assets", "notes.db") :
-        join(__dirname, "..", "assets", "notes.db");
-        database = new DatabaseConstructor(dbPath);
-    logger.info(`Loaded notes database from ${dbPath}.`);
+    database = new DatabaseConstructor(notesDatabasePath);
+    logger.info(`Loaded notes database from ${notesDatabasePath}.`);
 
     // Create empty notes table if one does not exist.
     const tables = database.prepare("SELECT * FROM sqlite_master WHERE type='table'").all();
     if (tables.filter(table => table.name === "notes").length === 0) {
-        database.prepare("CREATE TABLE notes(id INTEGER PRIMARY KEY,type,english,pinyin,pinyinSearchable,simplified,notes,timeCreated)").run();
+        database.prepare("CREATE TABLE notes(id INTEGER PRIMARY KEY,type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated)").run();
         logger.info("Created empty notes table in database.");
     }
 }
@@ -49,22 +53,23 @@ const loadStorageHandlers = () => {
     // AddNewNote
     ipcMain.handle(IPCHandlers.AddNewNote, (_, note: Note) => {
         const english = JSON.stringify(note.english);
+        const englishSearchable = note.english;
         const pinyin = JSON.stringify(note.pinyin);
         const pinyinSearchable = pinyinArrayToSearchable(note);
-        database.prepare("INSERT INTO notes(type,english,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?)")
-            .run([note.type.toString(), english, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
+        database.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?)")
+            .run([note.type.toString(), english, englishSearchable, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
     });
 
     // AddNewNotes
     ipcMain.handle(IPCHandlers.AddNewNotes, (_, notes: Note[]) => {
-        const statement = database.prepare("INSERT INTO notes(type,english,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?)");
+        const statement = database.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?,?)");
         database.transaction(() => {
-            console.log(notes);
             notes.forEach(note => {
                 const english = JSON.stringify(note.english);
+                const englishSearchable = note.english;
                 const pinyin = JSON.stringify(note.pinyin);
                 const pinyinSearchable = pinyinArrayToSearchable(note);
-                statement.run([note.type.toString(), english, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
+                statement.run([note.type.toString(), english, englishSearchable, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
             });
         })();
     });
@@ -82,6 +87,19 @@ const loadStorageHandlers = () => {
     // GetAllNotesOfType
     ipcMain.handle(IPCHandlers.GetNotesOfType, (_, type: NoteType) => {
         return database.prepare(`SELECT * FROM notes WHERE type = ${type.toString()}`).all();
+    });
+
+    // GetNotesSearchPredictions
+    ipcMain.handle(IPCHandlers.GetNotesSearchPredictions, (_, searchText: string): NoteSearchResults => {
+        const englishResults = database.prepare(`SELECT * FROM notes WHERE englishSearchable LIKE ?`).all([searchText + "%"]);
+        const pinyinResults = database.prepare(`SELECT * FROM notes WHERE pinyinSearchable LIKE ?`).all([searchText + "%"]);
+        return {englishResults, pinyinResults};
+    });
+
+    // SaveDatabase
+    ipcMain.handle(IPCHandlers.SaveDatabase, async (_) => {
+        await database.backup(notesDatabasePath);
+        console.log(`Saved database to ${notesDatabasePath}`);
     });
 
     // UpdateNote

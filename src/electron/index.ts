@@ -36,6 +36,10 @@ const createWindow = () => {
 
   mainWindow.setMenu(null);
 
+  loadDictionary();
+  loadPredictionHandlers();
+  loadStorageHandlers();
+
   const url =
     // process.env.NODE_ENV === "production"
     isProd
@@ -49,10 +53,6 @@ const createWindow = () => {
     app.quit();
   });
 
-  loadDictionary();
-  loadPredictionHandlers();
-  loadStorageHandlers();
-
   if (!isProd) mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
@@ -62,7 +62,7 @@ const createWindow = () => {
 
 app.on("ready", createWindow);
 
-// those two events are completely optional to subscrbe to, but that's a common way to get the
+// those two events are completely optional to subscribe to, but that's a common way to get the
 // user experience people expect to have on macOS: do not quit the application directly
 // after the user close the last window, instead wait for Command + Q (or equivalent).
 app.on("window-all-closed", () => {

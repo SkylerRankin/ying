@@ -1,11 +1,13 @@
 export const IPCHandlers = {
-    GetSearchPredictions: "getSearchPredictions",
+    GetDictionarySearchPredictions: "getDictionarySearchPredictions",
+    GetNotesSearchPredictions: "getNotesSearchPredictions",
     GetAllNotes: "getAllNotes",
     GetNotesOfType: "getNotesOfType",
     AddNewNote: "addNewNote",
     AddNewNotes: "addNewNotes",
     UpdateNote: "updateNote",
-    DeleteNote: "deleteNote"
+    DeleteNote: "deleteNote",
+    SaveDatabase: "saveDatabase"
 };
 
 export const ElectronAPIName: string = "electronAPI";
@@ -32,12 +34,19 @@ export type Prediction = {
     simplified: string
 }
 
+export type NoteSearchResults = {
+    englishResults: Note[],
+    pinyinResults: Note[]
+}
+
 export interface ElectronAPI {
     addNewNote: (note: Note) => Promise<void>,
     addNewNotes: (notes: Note[]) => Promise<void>,
     deleteNote: (id: number) => Promise<void>,
     getAllNotes: () => Promise<Note[]>,
     getNotesOfType: (type: NoteType) => Promise<Note[]>,
-    getSearchPredictions: (search: string) => Promise<Prediction[]>,
+    getDictionarySearchPredictions: (search: string) => Promise<Prediction[]>,
+    getNotesSearchPredictions: (search: string) => Promise<NoteSearchResults>,
+    saveDatabase: () => Promise<void>,
     updateNote: (updatedNote: Note) => Promise<void>
 }

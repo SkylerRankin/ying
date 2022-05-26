@@ -1,12 +1,13 @@
 <script lang="ts">
     import { NoteType, type Note, type ElectronAPI } from "../../common/constants";
-import { notesStore } from "../stores";
+    import { notesStore } from "../stores";
     const electronAPI: ElectronAPI = (window as any).electronAPI;
 
     let typeInput = "Word"; // Default to the first option in select.
     let pinyinInput: string = "";
     let charactersInput: string = "";
     let englishInput: string = "";
+    let hoveredNoteIndex: number = -1;
 
     let updatingDatabaseMessage: string = "";
 
@@ -26,6 +27,7 @@ import { notesStore } from "../stores";
         pinyinInput = "";
         charactersInput = "";
         englishInput = "";
+        console.log(note);
     }
 
     const onSave = async () => {
@@ -34,6 +36,7 @@ import { notesStore } from "../stores";
         notes = [];
         const updatedNotes: Note[] = await electronAPI.getAllNotes();
         notesStore.update(() => updatedNotes);
+        await electronAPI.saveDatabase();
         updatingDatabaseMessage = "Saving complete!";
         setTimeout(() => { updatingDatabaseMessage = ""; }, 2000);
     }
@@ -41,64 +44,46 @@ import { notesStore } from "../stores";
 </script>
 
 <style>
-    .inputTable {
+    table {
         width: 100%;
     }
 
-    .inputTable tr th {
-        text-align: left;
+    hr {
+        border-top: 1px dashed var(--main-color-gray);
+        margin: 20px 0px;
     }
+
+    select {
+        border: none;
+        outline: none;
+        box-shadow: none;
+    }
+
+    .title { color: var(--main-color-green); margin-bottom: 20px; }
+    .inputTable { margin-bottom: 20px; }
 
     .inputTable tr td textarea {
         width: 100%;
-        border-radius: 10px;
         resize: none;
+        outline: none;
+        background: none;
+        border: none;
     }
 
-    .inputContainer {
-        border: solid 1px lightgray;
-        border-radius: 10px;
-        padding: 20px;
-    }
+    .noteEditButtons { display: inline-block; width: 80px; }
+    .noteOutputItem { display: inline-block; width: 200px; }
+    .noteOutputRow:hover { border-bottom: 1px dashed var(--main-color-gray); }
+    .addButton, .saveButton { color: var(--main-color-blue); }
 
-    .header {
-        position: relative;
-    }
-
-    .databaseUpdateText {
-        text-align: center;
-        width: 200px;
-        position: absolute;
-        top: 20px;
-        right: 100px;
-    }
-
-    .saveButton {
-        width: 60px;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-    }
 
 </style>
 
-<div class="header">
-    <h1>Input words</h1>
-    <div class="databaseUpdateText">{ updatingDatabaseMessage }</div>
-    <button class="saveButton" on:click="{onSave}">Save</button>
-</div>
-
+<div class="title">input new words!</div>
 
 <div class="inputContainer">
     <table class="inputTable">
         <tr>
-            <th>Type</th>
-            <th>Pinyin</th>
-            <th>Characters</th>
-            <th>English</th>
-        </tr>
-        <tr>
-            <td>
+            <td style="vertical-align: top;">
                 <select bind:value="{typeInput}">
                     <option>Word</option>
                     <option>Phrase</option>
@@ -107,54 +92,45 @@ import { notesStore } from "../stores";
                 </select>
             </td>
             <td>
-                <textarea bind:value="{pinyinInput}"/>
+                <textarea placeholder="pinyin..." bind:value="{pinyinInput}"/>
             </td>
             <td>
-                <textarea bind:value="{charactersInput}"/>
+                <textarea placeholder="characters..." bind:value="{charactersInput}"/>
             </td>
             <td>
-                <textarea bind:value="{englishInput}"/>
+                <textarea placeholder="english..." bind:value="{englishInput}"/>
             </td>
         </tr>
     </table>
-    <button on:click="{onCreateNote}">Create</button>
-</div>
-
-<div>
-    Prediction Panel
+    <button class="addButton" on:click="{onCreateNote}">Add</button>
+    <button class="saveButton" on:click="{onSave}">Save</button>
+    <span class="databaseUpdateText">{ updatingDatabaseMessage }</span>
 </div>
 
 <hr/>
 
 <div>
-    <table class="inputTable">
-        <tr>
-            <th></th>
-            <th>Type</th>
-            <th>Pinyin</th>
-            <th>Characters</th>
-            <th>English</th>
-        </tr>
-        {#each notes as note}
-            <tr>
-                <td>
-                    <button>X</button>
-                    <button>Edit</button>
-                </td>
-                <td>
-                    { note.type }
-                </td>
-                <td>
-                    { note.pinyin }
-                </td>
-                <td>
-                    { note.simplified }
-                </td>
-                <td>
-                    { note.english }
-                </td>
-            </tr>
-        {/each}
-    </table>
+    {#each notes as note, index}
+        <div class="noteOutputRow" on:mouseenter="{() => hoveredNoteIndex = index}" on:mouseleave="{() => hoveredNoteIndex = -1}">
+            <span class="noteEditButtons">
+                {#if hoveredNoteIndex === index}
+                <button>X</button>
+                <button>Edit</button>
+                {/if}
+            </span>
+            <span class="noteOutputItem">
+                { note.type }
+            </span>
+            <span class="noteOutputItem">
+                { note.pinyin }
+            </span>
+            <span class="noteOutputItem">
+                { note.simplified }
+            </span>
+            <span class="noteOutputItem">
+                { note.english }
+            </span>
+        </div>
+    {/each}
 </div>
 
