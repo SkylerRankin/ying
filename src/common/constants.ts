@@ -29,9 +29,13 @@ export type Note = {
     timeCreated: number
 }
 
-export type Prediction = {
+export type DictionaryEntry = {
+    id: number,
+    simplified: string,
+    pinyin: string,
     pinyinSearchable: string,
-    simplified: string
+    english: string,
+    englishSearchable: string
 }
 
 export type NoteSearchResults = {
@@ -45,7 +49,7 @@ export interface ElectronAPI {
     deleteNote: (id: number) => Promise<void>,
     getAllNotes: () => Promise<Note[]>,
     getNotesOfType: (type: NoteType) => Promise<Note[]>,
-    getDictionarySearchPredictions: (search: string) => Promise<Prediction[]>,
+    getDictionarySearchPredictions: (search: string) => Promise<DictionaryEntry[]>,
     getNotesSearchPredictions: (search: string) => Promise<NoteSearchResults>,
     saveDatabase: () => Promise<void>,
     updateNote: (updatedNote: Note) => Promise<void>

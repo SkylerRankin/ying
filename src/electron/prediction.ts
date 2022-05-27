@@ -1,7 +1,7 @@
 const Database = require("better-sqlite3");
 const { join } = require("path");
 import { app, ipcMain } from 'electron';
-import { IPCHandlers } from '../common/constants';
+import { DictionaryEntry, IPCHandlers } from '../common/constants';
 import logger from "./utils/logger";
 
 /**
@@ -23,8 +23,23 @@ const loadDictionary = () => {
 
 const loadPredictionHandlers = () => {
     ipcMain.handle(IPCHandlers.GetDictionarySearchPredictions, (_, searchText) => {
-        const result = dictionaryDB.prepare("SELECT * FROM dictionary WHERE pinyinSearchable = ?").all([searchText]);
-        return result;
+        const results: DictionaryEntry[] = [];
+        const exactMatches: DictionaryEntry[] = dictionaryDB.prepare("SELECT * FROM dictionary WHERE pinyinSearchable = ?").all([searchText]);
+        results.push(...exactMatches);
+
+        const ids = new Set();
+        results.forEach(result => ids.add(result.id));
+
+        const maxResults = 50;
+
+        if (results.length < maxResults) {
+            const prefixMatches = dictionaryDB.prepare("SELECT * FROM dictionary WHERE pinyinSearchable LIKE ?").all([searchText + "%"]);
+            prefixMatches.forEach((prefixMatch: any) => {
+                if (!ids.has(prefixMatch.id)) results.push(prefixMatch);
+            });
+        }
+
+        return results.slice(0, maxResults);
     });
 }
 

@@ -28,10 +28,18 @@
         border: none;
         outline: none;
         font-size: 16px;
+        width: 400px;
     }
 
     .searchBar {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .resultsCountText {
         margin-bottom: 30px;
+        font-size: 12px;
+        color: var(--main-color-gray);
     }
 
     .editPanel {
@@ -41,6 +49,8 @@
     .noteItemRow {
         font-size: 0px;
         cursor: pointer;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--main-color-background);
     }
 
     .noteItemRow:hover {
@@ -51,7 +61,7 @@
         vertical-align: top;
         display: inline-block;
         width: 25%;
-        font-size: 16px;
+        font-size: 12px;
     }
 
     .dateItem { color: var(--main-color-gray); }
@@ -61,6 +71,7 @@
     <div class="searchBar">
         <input bind:value="{searchText}" placeholder="search..."/>
     </div>
+    <div class="resultsCountText">{filteredNotes.length} result{filteredNotes.length === 1 ? "" : "s"}</div>
     {#if selectedNote}
     <div class="editPanel">
         <button on:click="{() => selectedNote = undefined}">Edit</button>
@@ -72,7 +83,7 @@
         <div class="noteItemRow" on:click="{() => selectedNote = note}">
             <span class="noteItem">{note.simplified}</span>
             <span class="noteItem">{JSON.parse(note.pinyin)}</span>
-            <span class="noteItem">{JSON.parse(note.english)}</span>
+            <span class="noteItem">{JSON.parse(note.english).map((d, i) => `(${i + 1}) ${d}`)}</span>
             <span class="noteItem dateItem">{new Date(note.timeCreated).toLocaleDateString()}</span>
         </div>
     {:else}

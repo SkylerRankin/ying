@@ -65,8 +65,8 @@ const loadStorageHandlers = () => {
         const statement = database.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?,?)");
         database.transaction(() => {
             notes.forEach(note => {
-                const english = JSON.stringify(note.english);
-                const englishSearchable = note.english;
+                const english = note.english;
+                const englishSearchable = JSON.parse(note.english).join(" ");
                 const pinyin = JSON.stringify(note.pinyin);
                 const pinyinSearchable = pinyinArrayToSearchable(note);
                 statement.run([note.type.toString(), english, englishSearchable, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
