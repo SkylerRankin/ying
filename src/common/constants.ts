@@ -43,6 +43,16 @@ export type NoteSearchResults = {
     pinyinResults: Note[]
 }
 
+export type YAxisNumberData = {
+    value: number,
+    row: number
+}
+
+export type GraphAxisData = {
+    xAxisRow: number,
+    yAxisNumbers: YAxisNumberData[]
+}
+
 export interface ElectronAPI {
     addNewNote: (note: Note) => Promise<void>,
     addNewNotes: (notes: Note[]) => Promise<void>,

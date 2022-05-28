@@ -10,6 +10,7 @@
   import WordInputPage from "./pages/WordInputPage.svelte";
   import MenuHeader from "./components/MenuHeader.svelte";
   import NotesPage from "./pages/NotesPage.svelte";
+  import StatsPage from "./pages/StatsPage.svelte";
   let currentTab: string;
 </script>
 
@@ -20,6 +21,8 @@
       <WordInputPage />
     {:else if currentTab === "notes"}
       <NotesPage />
+    {:else if currentTab === "stats"}
+      <StatsPage />
     {/if}
   </div>
 </main>
