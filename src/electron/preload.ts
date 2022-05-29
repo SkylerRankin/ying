@@ -1,5 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron')
-import { ElectronAPIName, IPCHandlers, Note, NoteType } from '../common/constants';
+import { ElectronAPIName, IPCHandlers, Note, NoteType, TestSelectionMode } from '../common/constants';
 
 contextBridge.exposeInMainWorld(ElectronAPIName, {
     [IPCHandlers.AddNewNote]: (note: Note) => ipcRenderer.invoke(IPCHandlers.AddNewNote, note),
@@ -8,8 +8,10 @@ contextBridge.exposeInMainWorld(ElectronAPIName, {
     [IPCHandlers.GetAllNotes]: () => ipcRenderer.invoke(IPCHandlers.GetAllNotes),
     [IPCHandlers.GetNotesOfType]: (type: NoteType) => ipcRenderer.invoke(IPCHandlers.GetNotesOfType, type),
     [IPCHandlers.GetDictionarySearchPredictions]: (search: string) => ipcRenderer.invoke(IPCHandlers.GetDictionarySearchPredictions, search),
+    [IPCHandlers.GetNotesForTest]: (count: number, mode: TestSelectionMode) => ipcRenderer.invoke(IPCHandlers.GetNotesForTest, count, mode),
     [IPCHandlers.GetNotesSearchPredictions]: (search: string) => ipcRenderer.invoke(IPCHandlers.GetNotesSearchPredictions, search),
     [IPCHandlers.SaveDatabase]: () => ipcRenderer.invoke(IPCHandlers.SaveDatabase),
+    [IPCHandlers.SaveSingleTestResult]: (id: number, correct: number, incorrect: number, date: number) => ipcRenderer.invoke(IPCHandlers.SaveSingleTestResult, id, correct, incorrect, date),
     [IPCHandlers.UpdateNote]: (updatedNote: Note) => ipcRenderer.invoke(IPCHandlers.UpdateNote, updatedNote),
 });
 

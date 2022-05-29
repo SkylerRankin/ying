@@ -3,7 +3,7 @@
     .title { color: var(--main-color-gray); }
     .item { color: var(--main-color-gray); cursor: pointer; margin-right: 20px; }
     .item:hover { text-decoration: underline; }
-    .itemSelected { color: var(--main-color-green); }
+    .itemSelected { color: var(--main-color-blue); }
 
     hr {
         border-top: 1px dashed var(--main-color-gray);
@@ -13,7 +13,7 @@
   
 <script lang="ts">
     const tabs = [ "notes", "test", "stats", "add" ];
-    export let currentTab = tabs[2];
+    export let currentTab = tabs[1];
 
     const onTabSelect = (tabName: string) => {
         currentTab = tabName;

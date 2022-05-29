@@ -3,7 +3,7 @@ import * as BetterSqlite3 from 'better-sqlite3';
 const { join } = require("path");
 import { app, ipcMain } from 'electron';
 // import { writeFile } from 'fs/promises';
-import { IPCHandlers, Note, NoteSearchResults, NoteType } from '../common/constants';
+import { IPCHandlers, Note, NoteSearchResults, NoteType, TestSelectionMode } from '../common/constants';
 import logger from './utils/logger';
 const DatabaseConstructor = BetterSqlite3.default;
 
@@ -21,9 +21,14 @@ const DatabaseConstructor = BetterSqlite3.default;
  *   simplified: string
  *   notes: string
  * 
+ * Test table Schema (test.db)
+ *   id: number
+ *   data: string
+ * 
  */
 
-let database: Database;
+let notesDatabase: Database;
+
 const isProd = process.env.NODE_ENV === "production" || app.isPackaged;
 const notesDatabasePath: string = isProd ?
     join(app.getAppPath(), "..", "src", "assets", "notes.db") :
@@ -32,15 +37,22 @@ const notesDatabasePath: string = isProd ?
     join(__dirname, "..", "..", "src", "assets", "notes.db");
 
 const loadDatabase = () => {
-    database = new DatabaseConstructor(notesDatabasePath);
-    logger.info(`Loaded notes database from ${notesDatabasePath}.`);
+    notesDatabase = new DatabaseConstructor(notesDatabasePath);
+
+    logger.info(`Loaded notes database from ${notesDatabasePath}`);
 
     // Create empty notes table if one does not exist.
-    const tables = database.prepare("SELECT * FROM sqlite_master WHERE type='table'").all();
+    const tables = notesDatabase.prepare("SELECT * FROM sqlite_master WHERE type='table'").all();
     if (tables.filter(table => table.name === "notes").length === 0) {
-        database.prepare("CREATE TABLE notes(id INTEGER PRIMARY KEY,type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated)").run();
+        notesDatabase.prepare("CREATE TABLE notes(id INTEGER PRIMARY KEY,type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated)").run();
         logger.info("Created empty notes table in database.");
     }
+
+    if (tables.filter(table => table.name === "test").length === 0) {
+        notesDatabase.prepare("CREATE TABLE test(id INTEGER PRIMARY KEY,data)").run();
+        logger.info("Created empty test table in database.");
+    }
+
 }
 
 const loadStorageHandlers = () => {
@@ -56,14 +68,14 @@ const loadStorageHandlers = () => {
         const englishSearchable = note.english;
         const pinyin = JSON.stringify(note.pinyin);
         const pinyinSearchable = pinyinArrayToSearchable(note);
-        database.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?)")
+        notesDatabase.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?)")
             .run([note.type.toString(), english, englishSearchable, pinyin, pinyinSearchable, note.simplified, note.notes, note.timeCreated]);
     });
 
     // AddNewNotes
     ipcMain.handle(IPCHandlers.AddNewNotes, (_, notes: Note[]) => {
-        const statement = database.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?,?)");
-        database.transaction(() => {
+        const statement = notesDatabase.prepare("INSERT INTO notes(type,english,englishSearchable,pinyin,pinyinSearchable,simplified,notes,timeCreated) VALUES (?,?,?,?,?,?,?,?)");
+        notesDatabase.transaction(() => {
             notes.forEach(note => {
                 const english = note.english;
                 const englishSearchable = JSON.parse(note.english).join(" ");
@@ -76,30 +88,59 @@ const loadStorageHandlers = () => {
 
     // DeleteNote
     ipcMain.handle(IPCHandlers.DeleteNote, (_, id: number) => {
-        database.prepare(`DELETE FROM notes where id = ${id}`).run();
+        notesDatabase.prepare(`DELETE FROM notes where id = ${id}`).run();
     });
 
     // GetAllNotes
     ipcMain.handle(IPCHandlers.GetAllNotes, (_) => {
-        return database.prepare(`SELECT * FROM notes`).all();
+        return notesDatabase.prepare(`SELECT * FROM notes`).all();
     });
 
     // GetAllNotesOfType
     ipcMain.handle(IPCHandlers.GetNotesOfType, (_, type: NoteType) => {
-        return database.prepare(`SELECT * FROM notes WHERE type = ${type.toString()}`).all();
+        return notesDatabase.prepare(`SELECT * FROM notes WHERE type = ${type.toString()}`).all();
+    });
+
+    // GetNotesForTest
+    ipcMain.handle(IPCHandlers.GetNotesForTest, (_, count: number, mode: TestSelectionMode) => {
+        switch (mode) {
+            case "auto":
+            case "most recent":
+                return notesDatabase.prepare(`SELECT * FROM notes ORDER BY timeCreated DESC LIMIT ?`).all([count]);
+            case "most wrong":
+            case "random":
+                return notesDatabase.prepare("SELECT * FROM notes WHERE id IN (SELECT id FROM notes ORDER BY RANDOM() LIMIT ?)").all([count]);
+        }
     });
 
     // GetNotesSearchPredictions
     ipcMain.handle(IPCHandlers.GetNotesSearchPredictions, (_, searchText: string): NoteSearchResults => {
-        const englishResults = database.prepare(`SELECT * FROM notes WHERE englishSearchable LIKE ?`).all([searchText + "%"]);
-        const pinyinResults = database.prepare(`SELECT * FROM notes WHERE pinyinSearchable LIKE ?`).all([searchText + "%"]);
+        const englishResults = notesDatabase.prepare(`SELECT * FROM notes WHERE englishSearchable LIKE ?`).all([searchText + "%"]);
+        const pinyinResults = notesDatabase.prepare(`SELECT * FROM notes WHERE pinyinSearchable LIKE ?`).all([searchText + "%"]);
         return {englishResults, pinyinResults};
     });
 
     // SaveDatabase
     ipcMain.handle(IPCHandlers.SaveDatabase, async (_) => {
-        await database.backup(notesDatabasePath);
+        await notesDatabase.backup(notesDatabasePath);
         console.log(`Saved database to ${notesDatabasePath}`);
+    });
+    
+    // SaveSingleTestResult
+    ipcMain.handle(IPCHandlers.SaveSingleTestResult, async (_, id: number, correct: number, incorrect: number, date: number) => {
+        const json = notesDatabase.prepare("SELECT data FROM test WHERE id = ?").all([id]);
+        const data: any[] = json.length === 0 ? [] : JSON.parse(json[0].data);
+
+        const normalizedDate = new Date((new Date(date)).toDateString()).getTime();
+        const dateIndex = data.findIndex(item => item.date === normalizedDate);
+        if (dateIndex === -1) {
+            data.push({ date: normalizedDate, correct, incorrect });
+            notesDatabase.prepare("INSERT INTO test(id,data) VALUES(?,?)").run(id, JSON.stringify(data));
+        } else {
+            data[dateIndex].correct += correct;
+            data[dateIndex].incorrect += incorrect;
+            notesDatabase.prepare("UPDATE test SET data = ? WHERE id = ?").run(JSON.stringify(data), id);
+        }
     });
 
     // UpdateNote
@@ -107,7 +148,7 @@ const loadStorageHandlers = () => {
         const english = JSON.stringify(newNote.english);
         const pinyin = JSON.stringify(newNote.pinyin);
         const pinyinSearchable = pinyinArrayToSearchable(newNote);
-        return database.prepare(`UPDATE notes SET type = ${newNote.type}, english = ${english}, `
+        return notesDatabase.prepare(`UPDATE notes SET type = ${newNote.type}, english = ${english}, `
             + `pinyin=${pinyin}, pinyinSearchable=${pinyinSearchable}, `
             + `simplified=${newNote.simplified}, notes=${newNote.notes} WHERE id = ${newNote.id}`).run();
     });
