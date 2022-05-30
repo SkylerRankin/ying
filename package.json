@@ -32,7 +32,7 @@
     "lint": "npm-run-all -s lint:electron lint:svelte",
     "prepublishOnly": "npm-run-all -s test lint",
     "preversion": "npm-run-all -s lint format",
-    "copy-assets": "copyfiles -u 2 src/assets/* build/assets",
+    "copy-assets": "copyfiles -u 2 src/assets/* build/assets && copyfiles -u 2 src/assets/icon.png build",
     "build-database": "node scripts/dictionary.js"
   },
   "dependencies": {
@@ -46,6 +46,7 @@
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
+    "@rollup/plugin-url": "^7.0.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/clean-css": "^4.2.4",
     "@types/html-minifier": "^4.0.0",

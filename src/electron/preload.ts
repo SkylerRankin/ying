@@ -10,8 +10,9 @@ contextBridge.exposeInMainWorld(ElectronAPIName, {
     [IPCHandlers.GetDictionarySearchPredictions]: (search: string) => ipcRenderer.invoke(IPCHandlers.GetDictionarySearchPredictions, search),
     [IPCHandlers.GetNotesForTest]: (count: number, mode: TestSelectionMode) => ipcRenderer.invoke(IPCHandlers.GetNotesForTest, count, mode),
     [IPCHandlers.GetNotesSearchPredictions]: (search: string) => ipcRenderer.invoke(IPCHandlers.GetNotesSearchPredictions, search),
+    [IPCHandlers.GetAppMetadata]: () => ipcRenderer.invoke(IPCHandlers.GetAppMetadata),
     [IPCHandlers.SaveDatabase]: () => ipcRenderer.invoke(IPCHandlers.SaveDatabase),
-    [IPCHandlers.SaveSingleTestResult]: (id: number, correct: number, incorrect: number, date: number) => ipcRenderer.invoke(IPCHandlers.SaveSingleTestResult, id, correct, incorrect, date),
+    [IPCHandlers.SaveTestResults]: (ids: number[], correct: boolean[], date: number) => ipcRenderer.invoke(IPCHandlers.SaveTestResults, ids, correct, date),
     [IPCHandlers.UpdateNote]: (updatedNote: Note) => ipcRenderer.invoke(IPCHandlers.UpdateNote, updatedNote),
 });
 

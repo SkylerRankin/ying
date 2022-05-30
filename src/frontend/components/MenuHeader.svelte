@@ -13,7 +13,7 @@
   
 <script lang="ts">
     const tabs = [ "notes", "test", "stats", "add" ];
-    export let currentTab = tabs[1];
+    export let currentTab = tabs[0];
 
     const onTabSelect = (tabName: string) => {
         currentTab = tabName;

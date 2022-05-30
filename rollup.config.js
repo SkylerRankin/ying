@@ -7,6 +7,7 @@ import { terser } from "rollup-plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
 import css from "rollup-plugin-css-only";
+import url from "@rollup/plugin-url";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -73,6 +74,9 @@ export default {
       tsconfig: production ? "./tsconfig.svelte.prod.json" : "./tsconfig.svelte.json",
       sourceMap: !production,
       inlineSources: !production,
+    }),
+    url({
+      include: ["**/*.ttf"]
     }),
 
     // In dev mode, call `npm run start` once

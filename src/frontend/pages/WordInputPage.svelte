@@ -1,10 +1,11 @@
 <script lang="ts">
     import { NoteType, type Note, type ElectronAPI, type DictionaryEntry } from "../../common/constants";
-    import { notesStore } from "../stores";
+    import { editedNoteStore, notesStore } from "../stores";
     import { tweened } from "svelte/motion";
     import { cubicOut } from "svelte/easing";
     const electronAPI: ElectronAPI = (window as any).electronAPI;
 
+    const noteTypeStrings = ['word', 'phrase', 'sentence', 'grammar'];
     let typeInput = "Word"; // Default to the first option in select.
     let pinyinInput: string = "";
     let charactersInput: string = "";
@@ -26,10 +27,11 @@
             pinyin: pinyinInput,
             simplified: charactersInput,
             notes: "",
-            timeCreated: new Date().getTime()
+            timeCreated: new Date().getTime(),
+            totalCorrectAnswers: 0,
+            totalWrongAnswers: 0,
+            timeWeightedCorrectness: 0
         };
-        console.log(note);
-        console.log(JSON.parse(note.english))
         notes = [note, ...notes];
         pinyinInput = "";
         charactersInput = "";
@@ -56,6 +58,24 @@
         setTimeout(() => { inputTextAreaOpacity.set(0, { duration: 500 }); }, 100);
     }
 
+    const onDeleteNote = (index: number) => {
+        notes.splice(index, 1);
+        // Svelte reactivity happens on assignment, so there is a short delay before the
+        // splice() call is detected. Doing a self assignment to trigger the reaction.
+        notes = notes;
+    }
+
+    const onEditNote = (index: number) => {
+        pinyinInput = notes[index].pinyin;
+        charactersInput = notes[index].simplified;
+        englishInput = JSON.parse(notes[index].english).join("\n");
+
+        inputTextAreaOpacity.set(1, { duration: 0 });
+        setTimeout(() => { inputTextAreaOpacity.set(0, { duration: 500 }); }, 100);
+        notes.splice(index, 1);
+        notes = notes;
+    }
+
     $: (async () => {
         if (pinyinInput && pinyinInput.length > 0) {
             predictions = await electronAPI.getDictionarySearchPredictions(pinyinInput);
@@ -63,6 +83,19 @@
             predictions = [];
         }
     })();
+
+    // This page could have been auto-opened by clicking edit on the notes page. Check
+    // for this and load the edited note if so.
+    if ($editedNoteStore !== null) {
+        const editedNote: Note = $editedNoteStore;
+        console.log(editedNote);
+        pinyinInput = editedNote.pinyin;
+        charactersInput = editedNote.simplified;
+        englishInput = JSON.parse(editedNote.english).join("\n");
+        editedNoteStore.set(null);
+        inputTextAreaOpacity.set(1, { duration: 0 });
+        setTimeout(() => { inputTextAreaOpacity.set(0, { duration: 500 }); }, 100);
+    }
 
 </script>
 
@@ -82,7 +115,6 @@
         box-shadow: none;
     }
 
-    .title { color: var(--main-color-green); margin-bottom: 20px; }
     .inputTable { margin-bottom: 20px; }
 
     .inputTable tr td textarea {
@@ -114,11 +146,10 @@
     .noteOutputRow { margin-bottom: 20px; border-bottom: 1px dashed var(--main-color-background); }
     .noteOutputRow:hover { border-bottom: 1px dashed var(--main-color-gray); }
     .addButton, .saveButton { color: var(--main-color-blue); }
+    .suggestionsTitle { color: var(--main-color-gray); font-size: 14px; }
 
 
 </style>
-
-<div class="title">input new words!</div>
 
 <div class="inputContainer">
     <table class="inputTable">
@@ -149,7 +180,7 @@
 
 <hr/>
 
-<div>suggestions</div>
+<div class="suggestionsTitle">suggestions</div>
 <div class="predictionContainer">
 {#each predictions as prediction}
     <div class="predictionItem" on:click="{() => onUsePrediction(prediction)}">
@@ -171,12 +202,12 @@
     <div class="noteOutputRow" on:mouseenter="{() => hoveredNoteIndex = index}" on:mouseleave="{() => hoveredNoteIndex = -1}">
         <span class="noteEditButtons">
             {#if hoveredNoteIndex === index}
-            <button>X</button>
-            <button>Edit</button>
+            <button on:click="{() => onDeleteNote(index)}">X</button>
+            <button on:click="{() => onEditNote(index)}">Edit</button>
             {/if}
         </span>
         <span class="noteOutputItem">
-            { note.type }
+            { noteTypeStrings[note.type] }
         </span>
         <span class="noteOutputItem">
             { note.pinyin }
@@ -185,7 +216,7 @@
             { note.simplified }
         </span>
         <span class="noteOutputItem">
-            { JSON.parse(note.english) }
+            { JSON.parse(note.english).map((d, i) => `(${i + 1}) ${d}`) }
         </span>
     </div>
 {/each}

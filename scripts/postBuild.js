@@ -132,6 +132,9 @@ const copyPublicFolderAndMinify = (folderPath, destinationPath) => {
       } else if (/\.png$/.exec(curPath)) {
         const pngFile = readFileSync(curPath);
         writeFileSync(newPath, pngFile);
+      } else if (/\.ttf$/.exec(curPath)) {
+        const ttfFile = readFileSync(curPath);
+        writeFileSync(newPath, ttfFile);
       }
     }
   });

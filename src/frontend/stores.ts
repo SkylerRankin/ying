@@ -7,3 +7,5 @@ export const notesStore = writable([] as Note[]);
     const notes: Note[] = await electronAPI.getAllNotes();
     notesStore.update((_) => notes);
 })();
+
+export const editedNoteStore = writable(null as (null | Note));

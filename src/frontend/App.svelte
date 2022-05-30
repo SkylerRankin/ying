@@ -11,8 +11,11 @@
   import MenuHeader from "./components/MenuHeader.svelte";
   import NotesPage from "./pages/NotesPage.svelte";
   import StatsPage from "./pages/StatsPage.svelte";
-import TestPage from "./pages/TestPage.svelte";
+  import TestPage from "./pages/TestPage.svelte";
   let currentTab: string;
+
+  const updateTab = (newTab: string): void => { currentTab = newTab };
+
 </script>
 
 <main>
@@ -21,7 +24,7 @@ import TestPage from "./pages/TestPage.svelte";
     {#if currentTab === "add"}
       <WordInputPage />
     {:else if currentTab === "notes"}
-      <NotesPage />
+      <NotesPage updateTab={updateTab} />
     {:else if currentTab === "stats"}
       <StatsPage />
     {:else if currentTab === "test"}

@@ -1,8 +1,7 @@
 import {
   app,
   BrowserWindow,
-  Notification,
-  // nativeImage
+  Notification
 } from "electron";
 import path, { join } from "path";
 import { parse } from "url";
@@ -11,7 +10,7 @@ import { autoUpdater } from "electron-updater";
 import logger from "./utils/logger";
 import settings from "./utils/settings";
 import { loadDictionary, loadPredictionHandlers } from './prediction';
-import { loadStorageHandlers } from "./notesStorage";
+import { loadStorageHandlers, loadMetadataHandler } from "./notesStorage";
 
 const isProd = process.env.NODE_ENV === "production" || app.isPackaged;
 
@@ -31,14 +30,19 @@ const createWindow = () => {
       devTools: isProd ? false : true,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
-    },
+    }
   });
 
   mainWindow.setMenu(null);
+  const iconPath = isProd ?
+    join(app.getAppPath(), "..", "src", "assets", "icon.png") :
+    join(__dirname, "..", "assets", "icon.png");
+  mainWindow.setIcon(iconPath);
 
   loadDictionary();
   loadPredictionHandlers();
   loadStorageHandlers();
+  loadMetadataHandler();
 
   const url =
     // process.env.NODE_ENV === "production"

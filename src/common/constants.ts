@@ -4,12 +4,13 @@ export const IPCHandlers = {
     GetNotesSearchPredictions: "getNotesSearchPredictions",
     GetAllNotes: "getAllNotes",
     GetNotesOfType: "getNotesOfType",
+    GetAppMetadata: "getAppMetadata",
     AddNewNote: "addNewNote",
     AddNewNotes: "addNewNotes",
     UpdateNote: "updateNote",
     DeleteNote: "deleteNote",
     SaveDatabase: "saveDatabase",
-    SaveSingleTestResult: "saveSingleTestResult"
+    SaveTestResults: "saveTestResults"
 };
 
 export const ElectronAPIName: string = "electronAPI";
@@ -28,7 +29,21 @@ export type Note = {
     pinyin: string,
     simplified: string,
     notes: string,
-    timeCreated: number
+    timeCreated: number,
+    totalCorrectAnswers: number, // The total number of times this note was tested and answered correctly.
+    totalWrongAnswers: number, // The total number of times this note was tested and answered incorrectly.
+    timeWeightedCorrectness: number // A score that weights more recent correct answers higher than older ones.
+}
+
+export type NoteTestData = {
+    id: number,
+    data: string // The JSON encoded string of TestDataEntry items
+}
+
+export type TestDataEntry = {
+    date: number,
+    correct: number,
+    incorrect: number
 }
 
 export type DictionaryEntry = {
@@ -58,6 +73,10 @@ export type GraphAxisData = {
 export type TestMode = "characters" | "pinyin" | "english";
 export type TestSelectionMode = "most recent" | "random" | "most wrong" | "auto";
 
+export type AppMetadata = {
+    isProd: boolean,
+    notesDatabasePath: string
+}
 
 export interface ElectronAPI {
     addNewNote: (note: Note) => Promise<void>,
@@ -68,7 +87,8 @@ export interface ElectronAPI {
     getDictionarySearchPredictions: (search: string) => Promise<DictionaryEntry[]>,
     getNotesForTest: (count: number, mode: TestSelectionMode) => Promise<Note[]>,
     getNotesSearchPredictions: (search: string) => Promise<NoteSearchResults>,
+    getAppMetadata: () => AppMetadata,
     saveDatabase: () => Promise<void>,
-    saveSingleTestResult: (id: number, correct: number, incorrect: number, date: number) => Promise<void>,
+    saveTestResults: (ids: number[], correct: boolean[], date: number) => Promise<void>,
     updateNote: (updatedNote: Note) => Promise<void>
 }

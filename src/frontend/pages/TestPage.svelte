@@ -32,6 +32,7 @@
 
     const onStart = async () => {
         notesToTest = await electronAPI.getNotesForTest(questionCount, selectionMode);
+        noteResponses = [];
         startedTest = true;
     }
 
@@ -44,14 +45,12 @@
         currentNoteIndex++;
         noteResponses.push(correct);
         if (currentNoteIndex >= notesToTest.length) {
+            const ids = notesToTest.map(note => note.id as number);
+            const correct = [...noteResponses];
             startedTest = false;
             finishedTest = true;
             currentNoteIndex = 0;
-            notesToTest.forEach(async (note: Note, i: number) => {
-                const correct = noteResponses[i] ? 1 : 0;
-                const incorrect = noteResponses[i] ? 0 : 1;
-                await electronAPI.saveSingleTestResult(note.id as number, correct, incorrect, (new Date).getTime());
-            });
+            await electronAPI.saveTestResults(ids, correct, (new Date()).getTime());
             await electronAPI.saveDatabase();
             setTimeout(() => { finishedTest = false; }, 3000);
         }
