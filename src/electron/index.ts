@@ -11,6 +11,7 @@ import logger from "./utils/logger";
 import settings from "./utils/settings";
 import { loadDictionary, loadPredictionHandlers } from './prediction';
 import { loadStorageHandlers, loadMetadataHandler } from "./notesStorage";
+import { loadUtilHandlers } from "./utilHandlers";
 
 const isProd = process.env.NODE_ENV === "production" || app.isPackaged;
 
@@ -43,6 +44,7 @@ const createWindow = () => {
   loadPredictionHandlers();
   loadStorageHandlers();
   loadMetadataHandler();
+  loadUtilHandlers(mainWindow);
 
   const url =
     // process.env.NODE_ENV === "production"

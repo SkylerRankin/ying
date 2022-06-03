@@ -38,3 +38,12 @@ button {
 }
 
 button:hover { text-decoration: underline; }
+
+.highlightEnabled {
+	/* Disable text highlighting by default. */
+	user-select: text; /* supported by Chrome and Opera */
+	-webkit-user-select: text; /* Safari */
+	-khtml-user-select: text; /* Konqueror HTML */
+	-moz-user-select: text; /* Firefox */
+	-ms-user-select: text; /* Internet Explorer/Edge */
+}

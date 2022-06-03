@@ -4,6 +4,7 @@ import { join } from "path";
 import { app, ipcMain } from 'electron';
 import { AppMetadata, IPCHandlers, Note, NoteSearchResults, NoteTestData, NoteType, TestDataEntry, TestSelectionMode } from '../common/constants';
 import logger from './utils/logger';
+import { backupDatabase } from './backup';
 const DatabaseConstructor = BetterSqlite3.default;
 
 /**
@@ -162,6 +163,7 @@ const loadStorageHandlers = () => {
     // SaveDatabase
     ipcMain.handle(IPCHandlers.SaveDatabase, async (_) => {
         await notesDatabase.backup(notesDatabasePath);
+        backupDatabase();
         console.log(`Saved database to ${notesDatabasePath}`);
     });
 

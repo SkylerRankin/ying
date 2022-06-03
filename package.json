@@ -91,6 +91,9 @@
         "nsis"
       ]
     },
+    "nsis": {
+      "deleteAppDataOnUninstall": false
+    },
     "mac": {
       "target": [
         "dmg"
@@ -108,11 +111,13 @@
     },
     "files": [
       "build/**/*",
+      "!build/assets/notes.db",
       "node_modules/**/*",
       "package.json"
     ],
     "extraResources": [
-      "src/assets/*"
+      "src/assets/*",
+      "!src/assets/notes.db"
     ],
     "publish": [
       {

@@ -8,6 +8,7 @@ const {
   unlinkSync,
   rmdirSync,
   mkdirSync,
+  rmSync
 } = require("fs");
 const { join } = require("path");
 
@@ -155,3 +156,11 @@ minifyJSFiles(jsFiles);
 
 copyPublicFolderAndMinify(join(__dirname, "..", "public"), join(bundledElectronPath, "public"));
 cleanTsconfig();
+
+// There is a local notes database file used for testing. This should be deleted
+// from the production build so that a fresh one can be populated, and any existing
+// database file is not overwritten.
+if (process.env.NODE_ENV === "production") {
+  const notesDatabasePath = join(__dirname, "..", "build", "assets", "notes.db");
+  rmSync(notesDatabasePath);
+}

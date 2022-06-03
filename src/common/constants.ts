@@ -1,4 +1,8 @@
+import type { OpenDialogSyncOptions } from "electron";
+
 export const IPCHandlers = {
+    AuthenticateWithCode: "authenticateWithCode",
+    CheckAuthorization: "checkAuthorization",
     GetDictionarySearchPredictions: "getDictionarySearchPredictions",
     GetNotesForTest: "getNotesForTest",
     GetNotesSearchPredictions: "getNotesSearchPredictions",
@@ -10,7 +14,10 @@ export const IPCHandlers = {
     UpdateNote: "updateNote",
     DeleteNote: "deleteNote",
     SaveDatabase: "saveDatabase",
-    SaveTestResults: "saveTestResults"
+    SaveTestResults: "saveTestResults",
+    OpenFileDialog: "openFileDialog",
+    UpdateConfigFile: "updateConfigFile",
+    GetConfigFile: "getConfigFile"
 };
 
 export const ElectronAPIName: string = "electronAPI";
@@ -78,6 +85,10 @@ export type AppMetadata = {
     notesDatabasePath: string
 }
 
+export type ConfigData = {
+    backupDirectoryPath: string | undefined
+}
+
 export interface ElectronAPI {
     addNewNote: (note: Note) => Promise<void>,
     addNewNotes: (notes: Note[]) => Promise<void>,
@@ -88,7 +99,10 @@ export interface ElectronAPI {
     getNotesForTest: (count: number, mode: TestSelectionMode) => Promise<Note[]>,
     getNotesSearchPredictions: (search: string) => Promise<NoteSearchResults>,
     getAppMetadata: () => AppMetadata,
+    getConfigFile: () => Promise<ConfigData>,
+    openFileDialog: (title: string, mode?: OpenDialogSyncOptions["properties"]) => Promise<string[]>,
     saveDatabase: () => Promise<void>,
     saveTestResults: (ids: number[], correct: boolean[], date: number) => Promise<void>,
+    updateConfigFile: (data: ConfigData) => Promise<void>,
     updateNote: (updatedNote: Note) => Promise<void>
 }

@@ -12,6 +12,7 @@
   import NotesPage from "./pages/NotesPage.svelte";
   import StatsPage from "./pages/StatsPage.svelte";
   import TestPage from "./pages/TestPage.svelte";
+  import SettingsPage from "./pages/SettingsPage.svelte";
   let currentTab: string;
 
   const updateTab = (newTab: string): void => { currentTab = newTab };
@@ -29,6 +30,8 @@
       <StatsPage />
     {:else if currentTab === "test"}
       <TestPage />
+    {:else if currentTab === "settings"}
+      <SettingsPage />
     {/if}
   </div>
 </main>

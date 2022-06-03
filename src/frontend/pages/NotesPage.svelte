@@ -48,6 +48,7 @@
         if (!selectedNote || !selectedNote.id) return;
         await electronAPI.deleteNote(selectedNote.id);
         const updatedNotes: Note[] = await electronAPI.getAllNotes();
+        await electronAPI.saveDatabase();
         notesStore.update(() => updatedNotes);
         selectedNote = undefined;
     }
@@ -56,6 +57,7 @@
         if (!selectedNote) return;
         editedNoteStore.set(selectedNote);
         await onDeleteNote();
+        await electronAPI.saveDatabase();
         updateTab("add");
     }
 
